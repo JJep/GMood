@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import "masonry.h"
 #import "RegisterViewController.h"
-
+#import "ForgetPasswordViewController.h"
 @interface ViewController () <UITextFieldDelegate>
 @property (nonatomic,retain)UIImageView* userPortrait;
 @property (nonatomic,retain)UITextField* txUserName;
@@ -44,8 +44,13 @@
 
 - (void)toRegister {
     NSLog(@"did touch btnRegister");
-//    UIViewController* registerVC = [RegisterViewController new];
-//    [self presentViewController:registerVC animated:true completion:nil];
+    UIViewController* registerVC = [RegisterViewController new];
+    [self presentViewController:registerVC animated:true completion:nil];
+}
+
+- (void)forgetPassword {
+    UIViewController* forgetPasswordVC = [ForgetPasswordViewController new];
+    [self presentViewController:forgetPasswordVC animated:true completion:nil];
 }
 
 - (void)createUI {
@@ -54,6 +59,7 @@
     UILabel* lbLogin = [UILabel new];
     UILabel* lbPassword = [UILabel new];
     UIView* highSupportLine = [UIView new];
+    
     UIView* lowSupportLine = [UIView new];
     UILabel* lbOtherWayToLogin = [UILabel new];
     UIView* leftSupportLine = [UIView new];
@@ -107,6 +113,7 @@
     [rightSupportLine setBackgroundColor:[UIColor whiteColor]];
     [self.btnForgetPassword setTitle:@"忘记密码？" forState:UIControlStateNormal];
     self.btnForgetPassword.titleLabel.font = [UIFont systemFontOfSize:11];
+    [self.btnForgetPassword addTarget:nil action:@selector(forgetPassword) forControlEvents:UIControlEventTouchUpInside];
     [self.btnLogin setImage:[UIImage imageNamed:@"登录图标"] forState:UIControlStateNormal];
     [lbUserName setTextColor:[UIColor whiteColor]];
     [lbPassword setTextColor:[UIColor whiteColor]];
@@ -144,7 +151,7 @@
 
     [self.txUserName mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.equalTo(lbUserName.mas_right).offset(25);
-        make.height.top.equalTo(lbUserName);
+        make.height.equalTo(lbUserName);
         make.right.equalTo(highSupportLine.mas_right);
     }];
     
@@ -217,13 +224,13 @@
         make.top.equalTo(imgQQ);
         make.height.mas_equalTo(25);
         make.left.equalTo(self.view).offset(48);
-        make.right.equalTo(imgQQ.mas_left).offset(-97);
+        make.width.mas_equalTo(31);
     }];
     
     [imgWechat mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(imgQQ);
         make.height.mas_equalTo(25);
-        make.left.equalTo(imgQQ.mas_right).offset(97);
+        make.width.mas_equalTo(31);
         make.right.equalTo(self.view).offset(-48);
     }];
     
