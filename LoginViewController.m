@@ -6,21 +6,24 @@
 //  Copyright © 2017年 Jep Xia. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "LoginViewController.h"
 #import "masonry.h"
 #import "RegisterViewController.h"
 #import "ForgetPasswordViewController.h"
-@interface ViewController () <UITextFieldDelegate>
+#import "FaceViewController.h"
+@interface LoginViewController () <UITextFieldDelegate>
 @property (nonatomic,retain)UIImageView* userPortrait;
 @property (nonatomic,retain)UITextField* txUserName;
 @property (nonatomic,retain)UITextField* txUserPassword;
 @property (nonatomic,retain)UIButton* btnLogin;
 @property (nonatomic,retain)UIButton* btnForgetPassword;
 @property (nonatomic,retain)UIButton* btnToRegister;
+@property (strong,nonatomic) NSString* sessionUrl;
+@property (strong,nonatomic) NSDictionary* parameters;
 
 @end
 
-@implementation ViewController
+@implementation LoginViewController
 
 -(BOOL)textFieldShouldReturn:(UITextField *)textField
 {
@@ -37,6 +40,74 @@
     self.txUserName.delegate = self;
 }
 
+-(void) toFaceView {
+    FaceViewController* faceVC = [FaceViewController new];
+    [self presentViewController:faceVC animated:true completion:nil];
+}
+
+-(void) toLogin
+{
+    
+    self.sessionUrl = [NSString stringWithFormat:@"%@%@%@",@"http://",[GlobalVar urlGetter], @"/gmood/user/login" ];
+    //创建多个字典
+    self.parameters = [NSDictionary dictionaryWithObjectsAndKeys:
+                       self.txUserName.text, @"phoneNumber",
+                       self.txUserPassword.text, @"password",
+                       nil];
+    NSLog(@"parameters :%@", self.parameters);
+    
+    AFHTTPSessionManager* session = [AFHTTPSessionManager manager];
+//    session.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/plain"];
+
+    [session POST:self.sessionUrl parameters:self.parameters progress:nil
+          success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+              NSLog(@"%@",responseObject);
+              //根据key获取value
+              NSNumber* status = [responseObject objectForKey:@"status"];
+              NSLog(@"%@",status);
+              int myInt = [status intValue];
+              if (myInt == 1) {
+                  
+                  //UIAlertController风格：UIAlertControllerStyleAlert
+                  UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"登录成功"
+                                                                                           message:nil
+                                                                                    preferredStyle:UIAlertControllerStyleAlert ];
+                  
+                  //添加确定到UIAlertController中
+                  UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                      [self.navigationController popViewControllerAnimated:true];
+                  }];
+                  [alertController addAction:okAction];
+                  
+//                  
+//                  //将用户登录信息保存到本地
+//                  NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+//                  NSString *token =[responseObject objectForKey:@"token"];
+//                  NSNumber *userid = [responseObject objectForKey:@"uid"];
+//                  [defaults setObject:token forKey:@"token"];
+//                  [defaults setObject:userid forKey:@"uid"];
+//                  NSLog(@"保存成功");
+//                  NSString *usertoken = [defaults objectForKey:@"token"];//根据键值取出name
+//                  NSNumber *useruserid = [defaults objectForKey:@"uid"];
+//                  NSLog(@"usertoken = %@,userid = %@",usertoken,useruserid);
+//                  
+//                  
+                  [self presentViewController:alertController animated:YES completion:nil];
+//                  
+//                  [AppDelegate autoLogin];
+//                  [AppDelegate qmatch];
+//                  
+//                  //                  [AppDelegate rongCloudGetTokenAndConnect];
+              }
+          }
+          failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+              NSLog(@"failure");
+              NSLog(@"%@", error);
+          }
+     ];
+}
+
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
@@ -51,6 +122,11 @@
 - (void)forgetPassword {
     UIViewController* forgetPasswordVC = [ForgetPasswordViewController new];
     [self presentViewController:forgetPasswordVC animated:true completion:nil];
+}
+
+- (void)login {
+    UIViewController* faceVC = [FaceViewController new];
+    [self presentViewController:faceVC animated:true completion:nil];
 }
 
 - (void)createUI {
@@ -115,6 +191,8 @@
     self.btnForgetPassword.titleLabel.font = [UIFont systemFontOfSize:11];
     [self.btnForgetPassword addTarget:nil action:@selector(forgetPassword) forControlEvents:UIControlEventTouchUpInside];
     [self.btnLogin setImage:[UIImage imageNamed:@"登录图标"] forState:UIControlStateNormal];
+    [self.btnLogin addTarget:nil action:@selector(toLogin) forControlEvents:UIControlEventTouchUpInside];
+//    [self.btnLogin addTarget:nil action:@selector(toFaceView) forControlEvents:UIControlEventTouchUpInside];
     [lbUserName setTextColor:[UIColor whiteColor]];
     [lbPassword setTextColor:[UIColor whiteColor]];
     [self.txUserName setTextColor:[UIColor whiteColor]];
@@ -123,6 +201,7 @@
     self.btnToRegister.titleLabel.font = [UIFont systemFontOfSize:14];
     [self.btnToRegister setTintColor:[UIColor whiteColor]];
     [self.btnToRegister setTitle:@"注册" forState:UIControlStateNormal];
+    
     
     
     //设置按钮动作
@@ -153,6 +232,7 @@
         make.left.equalTo(lbUserName.mas_right).offset(25);
         make.height.equalTo(lbUserName);
         make.right.equalTo(highSupportLine.mas_right);
+        make.centerY.equalTo(lbUserName);
     }];
     
     [highSupportLine mas_makeConstraints:^(MASConstraintMaker *make) {

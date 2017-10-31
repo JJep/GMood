@@ -16,6 +16,8 @@
 @property (nonatomic,retain)UIButton* btnGetCode;
 @property (nonatomic,retain)UIButton* btnComplete;
 @property (nonatomic,retain)UIButton* btnBack;
+@property (strong,nonatomic) NSString* sessionUrl;
+@property (strong,nonatomic) NSDictionary* parameters;
 @end
 
 @implementation ForgetPasswordViewController
@@ -35,6 +37,122 @@
     [self dismissViewControllerAnimated:true completion:nil];
 }
 
+
+-(void) AFForgetPassword
+{
+    
+    if ([self.txNewPassword.text isEqualToString:self.txConfirmPassword.text]) {
+        
+        self.sessionUrl = [NSString stringWithFormat:@"%@%@%@",@"http://",[GlobalVar urlGetter], @"/gmood/user/findpsw" ];
+        //创建多个字典
+        self.parameters = [NSDictionary dictionaryWithObjectsAndKeys:
+                           self.txPhoneNumber.text, @"phoneNumber",
+                           self.txCode.text, @"code",
+                           self.txNewPassword.text ,@"newPassword",
+                           nil];
+        NSLog(@"parameters :%@", self.parameters);
+        
+        AFHTTPSessionManager* session = [AFHTTPSessionManager manager];
+        session.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/plain"];
+        [session POST:self.sessionUrl parameters:self.parameters progress:nil
+              success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+                  NSLog(@"%@",responseObject);
+                  //根据key获取value
+                  NSNumber* status = [responseObject objectForKey:@"status"];
+                  NSLog(@"%@",status);
+                  int myInt = [status intValue];
+                  if (myInt == 1) {
+                      NSLog(@"success");
+                      
+                      
+                      //UIAlertController风格：UIAlertControllerStyleAlert
+                      UIAlertController *alertController = [UIAlertController
+                                                            alertControllerWithTitle:@"密码修改成功"
+                                                                                               message:nil
+                                                                                        preferredStyle:UIAlertControllerStyleAlert ];
+                      
+                      //添加确定到UIAlertController中
+                      UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                          [self.navigationController popViewControllerAnimated:true];
+                      }];
+                      [alertController addAction:okAction];
+                      [self presentViewController:alertController animated:YES completion:nil];
+                      
+                      /*
+                       //将用户登录信息保存到本地
+                       NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+                       NSString *token =[responseObject objectForKey:@"token"];
+                       NSNumber *userid = [responseObject objectForKey:@"uid"];
+                       [defaults setObject:token forKey:@"token"];
+                       [defaults setObject:userid forKey:@"uid"];
+                       NSLog(@"保存成功");
+                       NSString *usertoken = [defaults objectForKey:@"token"];//根据键值取出name
+                       NSNumber *useruserid = [defaults objectForKey:@"uid"];
+                       NSLog(@"usertoken = %@,userid = %@",usertoken,useruserid);
+                       
+                       
+                       
+                       [AppDelegate autoLogin];
+                       [AppDelegate qmatch];
+                       
+                       //                  [AppDelegate rongCloudGetTokenAndConnect];
+                       */
+                  } else if (myInt == 0) {
+                      NSLog(@"失败");
+                      
+                      //UIAlertController风格：UIAlertControllerStyleAlert
+                      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"失败"
+                                                                                               message:nil
+                                                                                        preferredStyle:UIAlertControllerStyleAlert ];
+                      
+                      //添加确定到UIAlertController中
+                      UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                          [self.navigationController popViewControllerAnimated:true];
+                      }];
+                      [alertController addAction:okAction];
+                      [self presentViewController:alertController animated:YES completion:nil];
+                      
+                  } else if (myInt == 2){
+                      NSLog(@"验证码错误");
+                      
+                      //UIAlertController风格：UIAlertControllerStyleAlert
+                      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"验证码错误"
+                                                                                               message:nil
+                                                                                        preferredStyle:UIAlertControllerStyleAlert ];
+                      
+                      //添加确定到UIAlertController中
+                      UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                          [self.navigationController popViewControllerAnimated:true];
+                      }];
+                      [alertController addAction:okAction];
+                      [self presentViewController:alertController animated:YES completion:nil];
+                      
+                  }
+              }
+              failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+                  NSLog(@"failure");
+                  NSLog(@"%@", error);
+              }
+         ];
+    } else {
+        NSLog(@"两次密码输入不一致");
+        //UIAlertController风格：UIAlertControllerStyleAlert
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"两次密码输入不一致"
+                                                                                 message:nil
+                                                                          preferredStyle:UIAlertControllerStyleAlert ];
+        
+        //添加确定到UIAlertController中
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self.navigationController popViewControllerAnimated:true];
+        }];
+        [alertController addAction:okAction];
+        [self presentViewController:alertController animated:YES completion:nil];
+        
+
+    }
+    
+}
+
 - (void) createUI {
     self.txPhoneNumber = [UITextField new];
     self.txCode = [UITextField new];
@@ -45,6 +163,7 @@
     self.btnBack = [UIButton new];
     UILabel* lbForgetPassword = [UILabel new];
     UIImageView* background = [UIImageView new];
+    UIView* supportView = [UIView new];
 
     [self.view addSubview:background];
     [self.view addSubview:self.txConfirmPassword];
@@ -55,7 +174,9 @@
     [self.view addSubview:self.btnComplete];
     [self.view addSubview:self.btnGetCode];
     [self.view addSubview:lbForgetPassword];
+    [self.view addSubview:supportView];
 
+    [supportView setBackgroundColor:[UIColor whiteColor]];
     [background setImage:[UIImage imageNamed:@"背景"]];
     [lbForgetPassword setText:@"忘记密码"];
     lbForgetPassword.font = [UIFont systemFontOfSize:20];
@@ -69,9 +190,12 @@
     [self.txConfirmPassword setPlaceholder:@"确认密码"];
     [self.txConfirmPassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     [self.btnComplete setImage:[UIImage imageNamed:@"完成按钮"] forState:UIControlStateNormal];
+    [self.btnComplete addTarget:nil action:@selector(AFForgetPassword) forControlEvents:UIControlEventTouchUpInside];
     [self.btnBack setImage:[UIImage imageNamed:@"返回"] forState:UIControlStateNormal];
     self.btnBack.titleLabel.textColor = [UIColor whiteColor];
     [self.btnBack addTarget:nil action:@selector(back) forControlEvents:UIControlEventTouchUpInside];
+    [self.btnGetCode setTitle:@"获取验证码" forState:UIControlStateNormal];
+    self.btnGetCode.titleLabel.font = [UIFont systemFontOfSize:13];
     
     [background mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.left.bottom.right.equalTo(self.view);
@@ -119,6 +243,19 @@
         make.top.equalTo(self.txConfirmPassword.mas_bottom).offset(56);
         make.left.equalTo(self.view.mas_left).offset(128);
         make.right.equalTo(self.view.mas_right).offset(-128);
+    }];
+    
+    [supportView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.btnGetCode.mas_left);
+        make.height.equalTo(self.txCode.mas_height);
+        make.width.mas_equalTo(1);
+        make.centerY.equalTo(self.txCode);
+    }];
+    
+    [self.btnGetCode mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.right.equalTo(self.view.mas_right).offset(-42);
+            make.width.mas_equalTo(89);
+            make.centerY.equalTo(self.txCode);
     }];
     
     for (UIView* subView in [self.view subviews]) {

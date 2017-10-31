@@ -7,7 +7,8 @@
 //
 
 #import "AppDelegate.h"
-
+#import "DWTabBarController.h"
+#import "LoginViewController.h"
 @interface AppDelegate ()
 
 @end
@@ -19,7 +20,26 @@
     // Override point for customization after application launch.
     
     //设置状态栏颜色为白色
-    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleLightContent;
+    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleDefault;
+
+    
+    if(![[NSUserDefaults standardUserDefaults] boolForKey:@"firstLaunch"]){
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"firstLaunch"];
+        //第一次启动
+    }else{
+        //不是第一次启动了
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"firstLaunch"];
+    }
+    
+    self.window = [[UIWindow alloc]init];
+    
+    self.window.frame = [UIScreen mainScreen].bounds;
+    
+    self.window.rootViewController = [[DWTabBarController alloc]init];
+    
+    [self.window makeKeyAndVisible];
+    
+    
     
     return YES;
 }

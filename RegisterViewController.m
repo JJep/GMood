@@ -15,6 +15,8 @@
 @property (nonatomic,retain)UITextField* txIdentifyingCode;
 @property (nonatomic,retain)UIButton* btnGetCode;
 @property (nonatomic,retain)UITextField* txPassword;
+@property (strong,nonatomic) NSString* sessionUrl;
+@property (strong,nonatomic) NSDictionary* parameters;
 @end
 
 @implementation RegisterViewController
@@ -33,6 +35,106 @@
 - (void)back {
     [self dismissViewControllerAnimated:true completion:nil];
 }
+
+
+-(void) AFRegister
+{
+    
+    
+    
+    self.sessionUrl = [NSString stringWithFormat:@"%@%@%@",@"http://",[GlobalVar urlGetter], @"/gmood/user/register" ];
+    //创建多个字典
+    self.parameters = [NSDictionary dictionaryWithObjectsAndKeys:
+                       self.txPhoneNumber.text, @"phoneNumber",
+                       self.txPassword.text, @"password",
+                       self.txPhoneNumber.text, @"username",
+                       nil];
+    NSLog(@"parameters :%@", self.parameters);
+    
+    AFHTTPSessionManager* session = [AFHTTPSessionManager manager];
+    session.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/plain"];
+    [session POST:self.sessionUrl parameters:self.parameters progress:nil
+          success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+              NSLog(@"%@",responseObject);
+              //根据key获取value
+              NSNumber* status = [responseObject objectForKey:@"status"];
+              NSLog(@"%@",status);
+              int myInt = [status intValue];
+              if (myInt == 1) {
+                  NSLog(@"success");
+                  
+                  
+                  //UIAlertController风格：UIAlertControllerStyleAlert
+                  UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"注册成功"
+                                                                                           message:nil
+                                                                                    preferredStyle:UIAlertControllerStyleAlert ];
+                  
+                  //添加确定到UIAlertController中
+                  UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                      [self.navigationController popViewControllerAnimated:true];
+                  }];
+                  [alertController addAction:okAction];
+                  [self presentViewController:alertController animated:YES completion:nil];
+
+                  /*
+                  //将用户登录信息保存到本地
+                  NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+                  NSString *token =[responseObject objectForKey:@"token"];
+                  NSNumber *userid = [responseObject objectForKey:@"uid"];
+                  [defaults setObject:token forKey:@"token"];
+                  [defaults setObject:userid forKey:@"uid"];
+                  NSLog(@"保存成功");
+                  NSString *usertoken = [defaults objectForKey:@"token"];//根据键值取出name
+                  NSNumber *useruserid = [defaults objectForKey:@"uid"];
+                  NSLog(@"usertoken = %@,userid = %@",usertoken,useruserid);
+                  
+                  
+                  
+                  [AppDelegate autoLogin];
+                  [AppDelegate qmatch];
+                  
+                  //                  [AppDelegate rongCloudGetTokenAndConnect];
+                   */
+              } else if (myInt == 0) {
+                  NSLog(@"注册失败");
+                  
+                  //UIAlertController风格：UIAlertControllerStyleAlert
+                  UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"注册失败"
+                                                                                           message:nil
+                                                                                    preferredStyle:UIAlertControllerStyleAlert ];
+                  
+                  //添加确定到UIAlertController中
+                  UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                      [self.navigationController popViewControllerAnimated:true];
+                  }];
+                  [alertController addAction:okAction];
+                  [self presentViewController:alertController animated:YES completion:nil];
+
+              } else if (myInt == 2){
+                  NSLog(@"手机号已被注册");
+                  
+                  //UIAlertController风格：UIAlertControllerStyleAlert
+                  UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"手机号已被注册"
+                                                                                           message:nil
+                                                                                    preferredStyle:UIAlertControllerStyleAlert ];
+                  
+                  //添加确定到UIAlertController中
+                  UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                      [self.navigationController popViewControllerAnimated:true];
+                  }];
+                  [alertController addAction:okAction];
+                  [self presentViewController:alertController animated:YES completion:nil];
+
+              }
+          }
+          failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+              NSLog(@"failure");
+              NSLog(@"%@", error);
+          }
+     ];
+}
+
+
 
 - (void)createUI {
     
@@ -69,6 +171,7 @@
     [self.btnGetCode setTitle:@"获取验证码" forState:UIControlStateNormal];
     self.btnGetCode.titleLabel.font = [UIFont systemFontOfSize:13];
     [self.btnRegister setImage:[UIImage imageNamed:@"注册按钮"] forState:UIControlStateNormal];
+    [self.btnRegister addTarget:nil action:@selector(AFRegister) forControlEvents:UIControlEventTouchUpInside];
     [lbRegister setText:@"注册"];
     lbRegister.font = [UIFont systemFontOfSize:20];
     [lbRegister setTextColor:[UIColor whiteColor]];
