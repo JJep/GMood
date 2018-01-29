@@ -9,5 +9,17 @@
 #import <UIKit/UIKit.h>
 
 @interface NewMomentViewController : UIViewController
-
+{
+    UITableView* _tableView;
+}
+@property (nonatomic,retain)UITextView* txText;
+@property (nonatomic,retain)UIButton* chooseImageBtn;
+@property (nonatomic,retain)UIImageView* image;
+@property (nonatomic,retain)NSArray* imageArr;
+@property (nonatomic,strong)NSString* type;
+@property (nonatomic,retain)NSString* sessionUrl;
+@property (nonatomic,retain)NSDictionary* parameters;
+@property (nonatomic,retain)NSMutableArray* classes;
+@property (nonatomic,retain)NSMutableArray* imageArray;
+@property (nonatomic,retain)UIButton* typeBtn;
 @end

@@ -11,7 +11,7 @@
 #import "GMoodTabBar.h"
 #import "MomentsViewController.h"
 #import "MeViewController.h"
-
+#import "LoginViewController.h"
 @implementation DWTabBarController
 
 #pragma mark -
@@ -87,7 +87,7 @@
                           imageName:@"G-mood未点击"
                   selectedImageName:@"G-mood点击"];
     
-    [self addOneChildViewController:[[UINavigationController alloc]initWithRootViewController:[[UIViewController alloc] init]]
+    [self addOneChildViewController:[[UINavigationController alloc]initWithRootViewController:[[LoginViewController alloc] init]]
                           WithTitle:@"情绪记录"
                           imageName:@"情绪记录未点击"
                   selectedImageName:@"情绪记录点击"];
@@ -117,7 +117,7 @@
 
 - (void)addOneChildViewController:(UIViewController *)viewController WithTitle:(NSString *)title imageName:(NSString *)imageName selectedImageName:(NSString *)selectedImageName{
     
-    viewController.view.backgroundColor     = DWRandomColor;
+    viewController.view.backgroundColor     = GMoodWhiteBackgroundColor;
     viewController.tabBarItem.title         = title;
     viewController.tabBarItem.image         = [UIImage imageNamed:imageName];
     UIImage *image = [UIImage imageNamed:selectedImageName];

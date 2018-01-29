@@ -42,7 +42,7 @@
     
     
     
-    self.sessionUrl = [NSString stringWithFormat:@"%@%@%@",@"http://",[GlobalVar urlGetter], @"/gmood/user/register" ];
+    self.sessionUrl = [NSString stringWithFormat:@"%@%@%@",@"http://",[GlobalVar urlGetter], @"/gmood/register" ];
     //创建多个字典
     self.parameters = [NSDictionary dictionaryWithObjectsAndKeys:
                        self.txPhoneNumber.text, @"phoneNumber",
@@ -52,7 +52,7 @@
     NSLog(@"parameters :%@", self.parameters);
     
     AFHTTPSessionManager* session = [AFHTTPSessionManager manager];
-    session.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/plain"];
+//    session.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"text/plain"];
     [session POST:self.sessionUrl parameters:self.parameters progress:nil
           success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
               NSLog(@"%@",responseObject);

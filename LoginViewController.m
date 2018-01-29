@@ -48,7 +48,7 @@
 -(void) toLogin
 {
     
-    self.sessionUrl = [NSString stringWithFormat:@"%@%@%@",@"http://",[GlobalVar urlGetter], @"/gmood/user/login" ];
+    self.sessionUrl = [NSString stringWithFormat:@"%@%@%@",@"http://",[GlobalVar urlGetter], @"/gmood/login" ];
     //创建多个字典
     self.parameters = [NSDictionary dictionaryWithObjectsAndKeys:
                        self.txUserName.text, @"phoneNumber",
@@ -67,6 +67,8 @@
               NSLog(@"%@",status);
               int myInt = [status intValue];
               if (myInt == 1) {
+                  NSString* token = [NSString stringWithFormat:@"%@", [responseObject objectForKey:@"token"]];
+                  NSLog(@"%@", token);
                   
                   //UIAlertController风格：UIAlertControllerStyleAlert
                   UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"登录成功"
@@ -79,25 +81,9 @@
                   }];
                   [alertController addAction:okAction];
                   
-//                  
-//                  //将用户登录信息保存到本地
-//                  NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
-//                  NSString *token =[responseObject objectForKey:@"token"];
-//                  NSNumber *userid = [responseObject objectForKey:@"uid"];
-//                  [defaults setObject:token forKey:@"token"];
-//                  [defaults setObject:userid forKey:@"uid"];
-//                  NSLog(@"保存成功");
-//                  NSString *usertoken = [defaults objectForKey:@"token"];//根据键值取出name
-//                  NSNumber *useruserid = [defaults objectForKey:@"uid"];
-//                  NSLog(@"usertoken = %@,userid = %@",usertoken,useruserid);
-//                  
-//                  
+
                   [self presentViewController:alertController animated:YES completion:nil];
-//                  
-//                  [AppDelegate autoLogin];
-//                  [AppDelegate qmatch];
-//                  
-//                  //                  [AppDelegate rongCloudGetTokenAndConnect];
+
               }
           }
           failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {

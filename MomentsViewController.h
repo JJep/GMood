@@ -8,6 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@interface MomentsViewController : UIViewController
+@interface MomentsViewController : UIViewController<UITableViewDelegate, UITableViewDataSource>
+{
+    UITableView* mainTableView;
+//    UITableView* classTableView;
+    NSArray *_persons;
+    NSArray* _contentArray;
+    
+}
 
 @end

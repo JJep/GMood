@@ -8,10 +8,13 @@
 
 #import "HomeViewController.h"
 #import "SDCycleScrollView.h"
+#import "EmotionalTestView.h"
 #import "SceneApplicationTableViewCell.h"
-#define sceneApplicationTag 1
-#define moodTestTag 2
-#define schoolTestTag 3
+#import "Subject.h"
+#import "DetailEmotionalTestHomeViewController.h"
+#define sceneApplicationTag 9999999999
+#define moodTestTag 99999999991
+#define schoolTestTag 99999999992
 
 @interface HomeViewController () <UIScrollViewDelegate, UITableViewDataSource, UITableViewDelegate>
 @property (nonatomic,retain)SDCycleScrollView* cycleView;
@@ -21,8 +24,9 @@
 @property (nonatomic,retain)UIButton* moodTestBtn;
 @property (nonatomic,retain)UIButton* schoolAppBtn;
 @property (nonatomic,retain)UITableView* sceneApplicationTableView;
-@property (nonatomic,retain)UITableView* moodTestTableView;
 @property (nonatomic,retain)UITableView* schoolAppTableView;
+@property (nonatomic,retain)EmotionalTestView* emotionalTestView;
+@property (nonatomic,retain)NSMutableArray* subjectArray;
 @end
 
 @implementation HomeViewController
@@ -30,6 +34,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    self.title = @"G-mood";
     
     self.cycleView = [SDCycleScrollView new];
     UIImage* image = [UIImage imageNamed:@"背景"];
@@ -44,18 +50,50 @@
         make.left.right.top.equalTo(self.view);
         make.height.mas_equalTo(200);
     }];
-  
+    
+    self.subjectArray = [[NSMutableArray alloc] init];
+    
+    [self afGetEmotionalTests];
     [self setUpTitleView];
     [self setUpScrollView];
 
     
 }
 
+-(void)afGetEmotionalTests {
+    
+    NSString* sessionUrl = [NSString stringWithFormat:@"%@%@%@",@"http://",[GlobalVar urlGetter], @"/gmood/emotionTest/subject" ];
+    //创建多个字典
+
+    AFHTTPSessionManager* session = [AFHTTPSessionManager manager];
+    [session.requestSerializer setValue:@"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHQiOjE1MTIwMjg0NDk1OTMsInBob25lTnVtYmVyIjoiMTIzIiwiaWF0IjoxNTEyMDIxMjQ5NTkzfQ.9y0EOx-6p1nkulMdVfQkHTTwT8rRF5D0sD-F0oYK8cw" forHTTPHeaderField:@"token"];
+    
+    
+    [session GET:sessionUrl parameters:nil progress:nil
+          success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+              NSLog(@"%@",responseObject);
+              //根据key获取value
+              NSNumber* status = [responseObject objectForKey:@"status"];
+              NSLog(@"%@",status);
+              int myInt = [status intValue];
+              if (myInt == 1) {
+                  self.subjectArray = [responseObject objectForKey:@"subjectList"];
+                  
+              } else {
+                  NSLog(@"服务器出错");
+              }
+          }
+          failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+              NSLog(@"failure");
+              NSLog(@"%@", error);
+          }
+     ];
+
+}
+
 -(void)setUpScrollView {
     self.scrollView = [UIScrollView new];
     
-    CGFloat width = [[UIScreen mainScreen] bounds].size.width;
-    CGFloat height = [[UIScreen mainScreen] bounds].size.height;
 //    self.scrollView.contentSize = CGSizeMake(width, 0);
     [self.view addSubview:self.scrollView];
     [self.scrollView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -90,27 +128,31 @@
     [self.sceneApplicationTableView setTag:sceneApplicationTag];
     [self.sceneApplicationTableView registerClass:[SceneApplicationTableViewCell class] forCellReuseIdentifier:@"SCENECELL"];
     self.sceneApplicationTableView.pagingEnabled = false;
-    self.moodTestTableView = [UITableView new];
-    self.moodTestTableView.dataSource = self;
-    self.moodTestTableView.delegate = self;
-    [self.moodTestTableView setTag:moodTestTag];
     
+    self.emotionalTestView = [EmotionalTestView new];
+    [self.emotionalTestView setTag:moodTestTag];
+    [self.emotionalTestView.testImageBtn addTarget:self action:@selector(didTouchBtn:) forControlEvents:UIControlEventTouchUpInside];
+   // Subject* subject = [[Subject alloc] initWithDictionary:self.subjectArray[0]];
+  //  [self.emotionalTestView setTestLabelStr:subject.subject];
+    [self.emotionalTestView.testImageBtn setTag:1];
+
+
     self.schoolAppTableView = [UITableView new];
     self.schoolAppTableView.dataSource = self;
     self.schoolAppTableView.delegate = self;
     [self.schoolAppTableView setTag:schoolTestTag];
     
     [self.scrollView addSubview:self.sceneApplicationTableView];
-    [self.scrollView addSubview:self.moodTestTableView];
+    [self.scrollView addSubview:self.emotionalTestView];
     [self.scrollView addSubview:self.schoolAppTableView];
     
     [self.sceneApplicationTableView setBackgroundColor:DWRandomColor];
-    [self.moodTestTableView setBackgroundColor:DWRandomColor];
+    [self.emotionalTestView setBackgroundColor:DWRandomColor];
     [self.schoolAppTableView setBackgroundColor:DWRandomColor];
     
     [self.sceneApplicationTableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.top.bottom.equalTo(self.scrollView);
-        make.right.equalTo(self.moodTestTableView.mas_left);
+        make.right.equalTo(self.emotionalTestView.mas_left);
         make.width.mas_equalTo(width);
         make.size.mas_equalTo(CGSizeMake(width, height));
     }];
@@ -125,7 +167,7 @@
 
 
 
-    [self.moodTestTableView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [self.emotionalTestView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.bottom.equalTo(self.scrollView);
         make.right.equalTo(self.schoolAppTableView.mas_left);
         make.width.mas_equalTo(width);
@@ -170,7 +212,8 @@
     }
 }
 
--(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
     SceneApplicationTableViewCell* sceneCell = [tableView dequeueReusableCellWithIdentifier:@"SCENECELL" forIndexPath:indexPath];
     sceneCell.sceneImg.image = [UIImage imageNamed:@"学校"];
     sceneCell.sceneName.text = [NSString stringWithFormat:@"学校"];
@@ -224,6 +267,8 @@
             [self.moodTestBtn setSelected: true];
             [self.schoolAppBtn setSelected: false];
             [self.scrollView setContentOffset:CGPointMake(width, 0.f) animated:YES];
+            
+            
             break;
         case schoolTestTag:
             [self.sceneApplicationBtn setSelected: false];
@@ -232,6 +277,11 @@
             [self.scrollView setContentOffset:CGPointMake(2 * width, 0.f) animated:YES];
             break;
         default:
+            {
+                DetailEmotionalTestHomeViewController* detailEmotionalTestHomeVC = [DetailEmotionalTestHomeViewController new];
+                [detailEmotionalTestHomeVC setSubjectID:button.tag];
+                [self.navigationController pushViewController:detailEmotionalTestHomeVC animated:true];
+            }
             break;
     }
 }

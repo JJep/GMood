@@ -9,5 +9,9 @@
 #import <Foundation/Foundation.h>
 
 @interface GlobalVar : NSObject
-+(NSString *) urlGetter;
++ (NSString *) urlGetter;
++ (NSURL *)momentHandleUrl:(NSString *)url;
++ (NSURL *)userPortraitHandleUrl:(NSString *)url;
++ (NSString *)timeWithTimeIntervalString:(NSString *)timeString;
++ (UIImage *)imageWithImage:(UIImage *)image scaledToSize:(CGSize)newSize;
 @end
